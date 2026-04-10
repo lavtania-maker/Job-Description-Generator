@@ -1,8 +1,5 @@
-import { kv } from '@vercel/kv';
-
-export const config = {
-  runtime: 'edge',
-};
+// In-memory store for emails
+let emails: any[] = [];
 
 function checkAuth(request: Request): boolean {
   const authHeader = request.headers.get('authorization');
@@ -35,8 +32,6 @@ export default async function handler(request: Request) {
   }
 
   try {
-    const emails = (await kv.get<any[]>('emails')) || [];
-
     return new Response(JSON.stringify(emails), {
       status: 200,
       headers: { 'Content-Type': 'application/json', ...corsHeaders },
@@ -48,3 +43,5 @@ export default async function handler(request: Request) {
     });
   }
 }
+
+export { emails };

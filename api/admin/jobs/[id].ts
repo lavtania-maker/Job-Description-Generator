@@ -1,8 +1,5 @@
-import { kv } from '@vercel/kv';
-
-export const config = {
-  runtime: 'edge',
-};
+// In-memory store for jobs
+let jobs: any[] = [];
 
 function checkAuth(request: Request): boolean {
   const authHeader = request.headers.get('authorization');
@@ -32,8 +29,6 @@ export default async function handler(request: Request) {
   const id = pathParts[pathParts.length - 1];
 
   try {
-    const jobs = (await kv.get<any[]>('jobs')) || [];
-
     if (request.method === 'GET') {
       const job = jobs.find((j: any) => j.id === id);
       if (!job) {
@@ -63,7 +58,6 @@ export default async function handler(request: Request) {
         ...body,
         location: body.location || jobs[index].location || 'Malaysia',
       };
-      await kv.set('jobs', jobs);
 
       return new Response(JSON.stringify(jobs[index]), {
         status: 200,
@@ -72,8 +66,7 @@ export default async function handler(request: Request) {
     }
 
     if (request.method === 'DELETE') {
-      const filtered = jobs.filter((j: any) => j.id !== id);
-      await kv.set('jobs', filtered);
+      jobs = jobs.filter((j: any) => j.id !== id);
 
       return new Response(JSON.stringify({ success: true }), {
         status: 200,

@@ -1,8 +1,5 @@
-import { kv } from '@vercel/kv';
-
-export const config = {
-  runtime: 'edge',
-};
+// In-memory store for emails
+let emails: any[] = [];
 
 export default async function handler(request: Request) {
   const corsHeaders = {
@@ -24,7 +21,6 @@ export default async function handler(request: Request) {
 
   try {
     const { email, jobTitle, source } = await request.json();
-    const emails = (await kv.get<any[]>('emails')) || [];
 
     emails.push({
       email,
@@ -32,8 +28,6 @@ export default async function handler(request: Request) {
       source,
       createdAt: new Date().toISOString(),
     });
-
-    await kv.set('emails', emails);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
