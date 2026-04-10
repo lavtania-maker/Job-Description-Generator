@@ -31,8 +31,6 @@ function DebugNotFound() {
 }
 
 export default function App() {
-  console.log('[v0] App rendered, pathname:', window.location.pathname);
-
   return (
     <HelmetProvider>
       <BrowserRouter>
