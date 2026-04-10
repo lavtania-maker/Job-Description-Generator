@@ -44,7 +44,14 @@ export default function Home() {
         })
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: any;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.log('[v0] generate response (non-JSON):', text.slice(0, 200));
+        throw new Error('Server returned an unexpected response. Check that the API server is running and GEMINI_API_KEY is set.');
+      }
 
       if (!res.ok) {
         throw new Error(data.error || 'Failed to generate');
@@ -181,7 +188,11 @@ ${generatedJob.requirements.map(r => `- ${r}`).join('\n')}
               industry: ''
             })
           });
-          const data = await res.json();
+          const text = await res.text();
+          let data: any;
+          try { data = JSON.parse(text); } catch {
+            throw new Error('Server returned an unexpected response.');
+          }
           if (!res.ok) throw new Error(data.error || 'Failed to generate');
           const jobRes = await fetch(`/api/jobs/${data.slug}`);
           if (!jobRes.ok) throw new Error('Failed to fetch generated job');
