@@ -1,10 +1,9 @@
-// In-memory store for jobs (resets on deployment)
-let jobs: any[] = [];
+import { getAllJobs } from '../_data.js';
 
 export default async function handler(request: Request) {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
 
@@ -14,6 +13,7 @@ export default async function handler(request: Request) {
 
   try {
     if (request.method === 'GET') {
+      const jobs = getAllJobs().filter((j: any) => !j.__deleted);
       const summary = jobs.map((j: any) => ({
         id: j.id,
         slug: j.slug,

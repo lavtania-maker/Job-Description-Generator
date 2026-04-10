@@ -1,10 +1,9 @@
-// In-memory store for jobs
-let jobs: any[] = [];
+import { findJobBySlug } from '../_data.js';
 
 export default async function handler(request: Request) {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
 
@@ -18,8 +17,8 @@ export default async function handler(request: Request) {
 
   try {
     if (request.method === 'GET') {
-      const job = jobs.find((j: any) => j.slug === slug);
-      if (!job) {
+      const job = findJobBySlug(slug);
+      if (!job || job.__deleted) {
         return new Response(JSON.stringify({ error: 'Job not found' }), {
           status: 404,
           headers: { 'Content-Type': 'application/json', ...corsHeaders },

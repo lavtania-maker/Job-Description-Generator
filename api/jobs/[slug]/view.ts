@@ -1,5 +1,7 @@
-// In-memory store for jobs
-let jobs: any[] = [];
+import { findJobBySlug } from '../../_data.js';
+
+// In-memory view counter (ephemeral, good enough for tracking per cold-start)
+const viewCounts: Record<string, number> = {};
 
 export default async function handler(request: Request) {
   const corsHeaders = {
@@ -24,18 +26,17 @@ export default async function handler(request: Request) {
   const slug = pathParts[pathParts.length - 2];
 
   try {
-    const index = jobs.findIndex((j: any) => j.slug === slug);
-
-    if (index === -1) {
+    const job = findJobBySlug(slug);
+    if (!job) {
       return new Response(JSON.stringify({ error: 'Job not found' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
 
-    jobs[index].views = (jobs[index].views || 0) + 1;
+    viewCounts[slug] = (viewCounts[slug] || 0) + 1;
 
-    return new Response(JSON.stringify({ success: true, views: jobs[index].views }), {
+    return new Response(JSON.stringify({ success: true, views: viewCounts[slug] }), {
       status: 200,
       headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });

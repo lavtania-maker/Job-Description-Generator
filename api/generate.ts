@@ -1,7 +1,5 @@
 import { GoogleGenAI, Type } from '@google/genai';
-
-// In-memory store for jobs
-let jobs: any[] = [];
+import { findJobBySlug, addJob } from './_data.js';
 
 function slugify(text: string) {
   return text
@@ -45,7 +43,7 @@ export default async function handler(request: Request) {
     const slug = slugify(`${jobTitle} job description`);
 
     // Check for duplicate
-    const existingJob = jobs.find((j: any) => j.slug === slug);
+    const existingJob = findJobBySlug(slug);
     if (existingJob) {
       return new Response(JSON.stringify({ slug: existingJob.slug, isExisting: true }), {
         status: 200,
@@ -137,7 +135,7 @@ export default async function handler(request: Request) {
       createdAt: new Date().toISOString(),
     };
 
-    jobs.push(newJob);
+    addJob(newJob);
 
     return new Response(JSON.stringify({ slug: newJob.slug, isExisting: false }), {
       status: 200,

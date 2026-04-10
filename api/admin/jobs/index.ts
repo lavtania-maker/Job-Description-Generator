@@ -1,5 +1,4 @@
-// In-memory store for jobs
-let jobs: any[] = [];
+import { getAllJobs, addJob } from '../../_data.js';
 
 function slugify(text: string) {
   return text
@@ -7,7 +6,7 @@ function slugify(text: string) {
     .toLowerCase()
     .replace(/\s+/g, '-')
     .replace(/[^\w\-]+/g, '')
-    .replace(/\-\-+/g, '-')
+    .replace(/--+/g, '-')
     .replace(/^-+/, '')
     .replace(/-+$/, '');
 }
@@ -37,6 +36,7 @@ export default async function handler(request: Request) {
 
   try {
     if (request.method === 'GET') {
+      const jobs = getAllJobs().filter((j: any) => !j.__deleted);
       return new Response(JSON.stringify(jobs), {
         status: 200,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
@@ -52,7 +52,7 @@ export default async function handler(request: Request) {
         slug: slugify(body.jobTitle + ' job description'),
         createdAt: new Date().toISOString(),
       };
-      jobs.push(newJob);
+      addJob(newJob);
 
       return new Response(JSON.stringify(newJob), {
         status: 200,

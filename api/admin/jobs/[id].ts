@@ -1,5 +1,4 @@
-// In-memory store for jobs
-let jobs: any[] = [];
+import { findJobById, updateJob, deleteJob } from '../../_data.js';
 
 function checkAuth(request: Request): boolean {
   const authHeader = request.headers.get('authorization');
@@ -30,8 +29,8 @@ export default async function handler(request: Request) {
 
   try {
     if (request.method === 'GET') {
-      const job = jobs.find((j: any) => j.id === id);
-      if (!job) {
+      const job = findJobById(id);
+      if (!job || job.__deleted) {
         return new Response(JSON.stringify({ error: 'Job not found' }), {
           status: 404,
           headers: { 'Content-Type': 'application/json', ...corsHeaders },
@@ -44,30 +43,25 @@ export default async function handler(request: Request) {
     }
 
     if (request.method === 'PUT') {
-      const index = jobs.findIndex((j: any) => j.id === id);
-      if (index === -1) {
+      const body = await request.json();
+      const updated = updateJob(id, {
+        ...body,
+        location: body.location || 'Malaysia',
+      });
+      if (!updated) {
         return new Response(JSON.stringify({ error: 'Job not found' }), {
           status: 404,
           headers: { 'Content-Type': 'application/json', ...corsHeaders },
         });
       }
-
-      const body = await request.json();
-      jobs[index] = {
-        ...jobs[index],
-        ...body,
-        location: body.location || jobs[index].location || 'Malaysia',
-      };
-
-      return new Response(JSON.stringify(jobs[index]), {
+      return new Response(JSON.stringify(updated), {
         status: 200,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
 
     if (request.method === 'DELETE') {
-      jobs = jobs.filter((j: any) => j.id !== id);
-
+      deleteJob(id);
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
