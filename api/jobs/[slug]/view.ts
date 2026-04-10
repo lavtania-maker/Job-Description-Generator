@@ -1,8 +1,5 @@
-import { kv } from '@vercel/kv';
-
-export const config = {
-  runtime: 'edge',
-};
+// In-memory store for jobs
+let jobs: any[] = [];
 
 export default async function handler(request: Request) {
   const corsHeaders = {
@@ -27,7 +24,6 @@ export default async function handler(request: Request) {
   const slug = pathParts[pathParts.length - 2];
 
   try {
-    const jobs = (await kv.get<any[]>('jobs')) || [];
     const index = jobs.findIndex((j: any) => j.slug === slug);
 
     if (index === -1) {
@@ -38,7 +34,6 @@ export default async function handler(request: Request) {
     }
 
     jobs[index].views = (jobs[index].views || 0) + 1;
-    await kv.set('jobs', jobs);
 
     return new Response(JSON.stringify({ success: true, views: jobs[index].views }), {
       status: 200,

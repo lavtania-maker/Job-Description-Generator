@@ -1,8 +1,5 @@
-import { kv } from '@vercel/kv';
-
-export const config = {
-  runtime: 'edge',
-};
+// In-memory store for jobs
+let jobs: any[] = [];
 
 function slugify(text: string) {
   return text
@@ -39,8 +36,6 @@ export default async function handler(request: Request) {
   }
 
   try {
-    const jobs = (await kv.get<any[]>('jobs')) || [];
-
     if (request.method === 'GET') {
       return new Response(JSON.stringify(jobs), {
         status: 200,
@@ -58,7 +53,6 @@ export default async function handler(request: Request) {
         createdAt: new Date().toISOString(),
       };
       jobs.push(newJob);
-      await kv.set('jobs', jobs);
 
       return new Response(JSON.stringify(newJob), {
         status: 200,

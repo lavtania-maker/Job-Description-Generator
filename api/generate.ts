@@ -1,9 +1,7 @@
-import { kv } from '@vercel/kv';
 import { GoogleGenAI, Type } from '@google/genai';
 
-export const config = {
-  runtime: 'edge',
-};
+// In-memory store for jobs
+let jobs: any[] = [];
 
 function slugify(text: string) {
   return text
@@ -45,7 +43,6 @@ export default async function handler(request: Request) {
     }
 
     const slug = slugify(`${jobTitle} job description`);
-    const jobs = (await kv.get<any[]>('jobs')) || [];
 
     // Check for duplicate
     const existingJob = jobs.find((j: any) => j.slug === slug);
@@ -141,7 +138,6 @@ export default async function handler(request: Request) {
     };
 
     jobs.push(newJob);
-    await kv.set('jobs', jobs);
 
     return new Response(JSON.stringify({ slug: newJob.slug, isExisting: false }), {
       status: 200,

@@ -1,8 +1,5 @@
-import { kv } from '@vercel/kv';
-
-export const config = {
-  runtime: 'edge',
-};
+// In-memory store for jobs (resets on deployment)
+let jobs: any[] = [];
 
 export default async function handler(request: Request) {
   const corsHeaders = {
@@ -16,8 +13,6 @@ export default async function handler(request: Request) {
   }
 
   try {
-    const jobs = (await kv.get<any[]>('jobs')) || [];
-
     if (request.method === 'GET') {
       const summary = jobs.map((j: any) => ({
         id: j.id,
